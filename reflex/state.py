@@ -60,6 +60,7 @@ from reflex.event import (
 from reflex.istate.data import RouterData
 from reflex.istate.storage import ClientStorageBase
 from reflex.model import Model
+from reflex.state import State
 from reflex.utils import console, format, path_ops, prerequisites, types
 from reflex.utils.exceptions import (
     ComputedVarShadowsBaseVarsError,
@@ -4145,3 +4146,18 @@ def reload_state_module(
             state._var_dependencies = {}
             state._init_var_dependency_dicts()
     state.get_class_substate.cache_clear()
+
+class ErrorState(State):
+    """Handles error state globally."""
+
+    error_message: str = ""
+
+    def handle_error(self, event: Event) -> None:
+        """Handle an error at the backend dynamically by storing the message."""
+        args = getattr(event, "args", [])
+        if args:
+            message = "\n".join(args[0]) if isinstance(args[0], list) else str(args[0])
+        else:
+            message = "Unknown error"
+
+        self.error_message = message
